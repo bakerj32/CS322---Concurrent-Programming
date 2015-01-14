@@ -1,0 +1,27 @@
+
+The general strategey involves signalling lights based on two conditions:
+
+1) The current signal hasn't been green in a certain amount of time.
+2) The current signal and and it's max valid co-signal (signal that can be green at the same time as the current signal and has more cars than any other valid co-signal) have the largest combined number of cars waiting at them. 
+
+At the start of a program the dispatcher thread is created. This process is reponsible for dispatching the other 8 signals. Before this happens, all the data is read in from the file and a line count is obtained (used later as an index in a looping structure). Next the threads are created and initialized.
+
+I initialize each signal with an array of ID's of it's valid co-signals (signals that can be green while the current signal is green).
+
+Then we enter the main processing loop for the dispatcher function. If we find a "1" in our data array (signifying the arrival of a car), that process is notified. After each row is processed we increment the tick varible, which simulates time. Each tick = 200ms.
+
+Each signal will check for the arrival of a car. If a car has arrived, the process reports that to the output file. Next the process will check to see if it has priority to turn green. Again, this is decided in two ways:
+
+1) Current signal has been idle for a certain amount of time. This is done by having keeping a counter. If a process has been red for an entire "light cycle" (a light changing from red to green to red again), then it's counter is updated. If the current process is the "most idle" (has highest counter value) and that value is above a certain threshold, then it will have priority.
+
+Otherwise...
+
+2) The current signal and it's max valid co signal have the highest combined car count out of any other combination of lights. This is done by looping through the current signals valid co-signal Ids (intialized previously) and then consulting the car_count for each co-sig obtained to find the max car count for the valid co-sigs. If the sum of both the current signal and it's max co-sig's car counts is greater than any other combination, these signals become the priority.
+
+Once a process has been identified as priority, it changes it's signal to green at writes to output file. The light will stay green until the combination of the current signal and it's max co-sig's car count is greater than that of any other SINGLE light (not combination).
+
+The reason we compare against a SINGLE light as opposed to a combination of lights is that we do not want two sets of lights to simply "trade off". For example, if ComboA had 10 (5,5) cars and ComboB had 9 (5, 4) cars, and ComboA is currently green, it would only stay green until 2 cars passed. Then ComboB would take priority (since 9 > 8) for 2 cars and they would switch back and forth. By comparing to a single light, ComboA will stay green until it's total (10) is less than only 1 light in ComboB (5). 
+
+We also have a check to see if the current signal's car count is 0. This is for the "idle case" where a signal may be set to green while it's car count is already less than that of other signals.
+
+The signal is then set to red and the light and priority mutex is released, allowing another process to take priority.

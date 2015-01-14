@@ -1,0 +1,81 @@
+// Sequential Psuedocode (Part A)
+
+n = count(a)
+m = count(b)
+
+c = []
+
+if n > m:
+	small_array_size = m;
+else:
+	small_array_size = n;
+
+for(i = 0; i <= small_array_size; i++){
+	c[a[i]]++;
+	c[b[i]]++;
+	if((c[a[i]] == 2 && c[b[i]] == 2) && c[a[i]] == c[b[i]]){ cnt++; }
+        else if(c[a[i]] == 2){ cnt++; }
+        else if(c[b[i]] == 2){ cnt++; }
+}
+
+if (n > m){
+    for(i = small_array_size + 1; i < n; i++){
+        c[a[i]]++;
+        if(c[a[i]] == 2){ cnt++; }
+    }
+}
+else if (m > n){
+    for(i = small_array_size + 1; i < m; i++){
+        c[b[i]]++;
+        if(c[b[i]] == 2){ cnt++; }
+    }
+}
+
+// Concurrent Psuedocode (Part B)
+
+n = count(a)
+m = count(b)
+L = semaphore_lock;
+
+c = []
+
+if n > m:
+	small_array_size = m;
+else:
+	small_array_size = n;
+
+co[thread_id=0 to thread_count]:
+	start = thread_id * (size/thread_count);
+	end = (thread_id+1) * (size/thread_count);
+
+	for(i = start; i <= end; i++){
+		<await lock(L)>
+			c[a[i]]++;
+			c[b[i]]++;
+			if((c[a[i]] == 2 && c[b[i]] == 2) && c[a[i]] == c[b[i]]){ cnt++; }
+	        	else if(c[a[i]] == 2){ cnt++; }
+	        	else if(c[b[i]] == 2){ cnt++; }
+		<await unlock(L)>
+	}
+
+	if (n > m){
+	    for(i = small_array_size + 1; i < n; i++){
+        	c[a[i]]++;
+	        if(c[a[i]] == 2){ 
+			<await lock(L)>
+				cnt++; 
+			<await unlock(L)>
+		}
+            }
+    	}
+	else if (m > n){
+	    for(i = small_array_size + 1; i < m; i++){
+        	c[b[i]]++;
+	        if(c[b[i]] == 2){
+			<await lock(L)>
+				cnt++;
+			<await unlock(L)>
+		}
+	    }
+	}
+oc;
